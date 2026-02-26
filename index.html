@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destiny Shuffle</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#1e1e2f,#2c2c54);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    text-align:center;
+}
+
+.container{
+    width:90%;
+    max-width:400px;
+}
+
+.cards{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+}
+
+.card{
+    width:45%;
+    height:120px;
+    background:#444;
+    border-radius:12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    transition:transform 0.6s;
+    font-weight:bold;
+    padding:10px;
+}
+
+.hidden{
+    background:#888;
+}
+
+button{
+    margin-top:20px;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    background:#ff6b6b;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2 id="title">Memorize both options carefully</h2>
+    <div class="cards">
+        <div class="card" id="card1"></div>
+        <div class="card" id="card2"></div>
+    </div>
+    <button id="shuffleBtn">Shuffle Now</button>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const optionA = params.get("A");
+const optionB = params.get("B");
+const forced = params.get("F");
+
+if(!optionA || !optionB || !forced){
+    document.body.innerHTML="<h2 style='color:white'>Missing URL parameters.</h2>";
+    throw new Error("Missing parameters");
+}
+
+const card1 = document.getElementById("card1");
+const card2 = document.getElementById("card2");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const title = document.getElementById("title");
+
+card1.innerText = optionA;
+card2.innerText = optionB;
+
+let shuffled = false;
+
+shuffleBtn.onclick = () => {
+    card1.innerText = "";
+    card2.innerText = "";
+    card1.classList.add("hidden");
+    card2.classList.add("hidden");
+    shuffleBtn.style.display="none";
+    title.innerText="Choose one card";
+
+    shuffled = true;
+};
+
+card1.onclick = () => reveal(card1, card2);
+card2.onclick = () => reveal(card2, card1);
+
+function reveal(selected, other){
+    if(!shuffled) return;
+
+    if(forced === "A"){
+        selected.innerText = optionA;
+        setTimeout(()=>{ other.innerText = optionB; },1000);
+    } else {
+        selected.innerText = optionB;
+        setTimeout(()=>{ other.innerText = optionA; },1000);
+    }
+
+    selected.classList.remove("hidden");
+    other.classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
