@@ -31,20 +31,27 @@ body{
 
 .card{
     width:45%;
-    height:120px;
+    height:130px;
     background:#444;
     border-radius:12px;
     display:flex;
     justify-content:center;
     align-items:center;
     cursor:pointer;
-    transition:transform 0.6s;
+    transition:all 0.4s ease;
     font-weight:bold;
     padding:10px;
+    font-size:18px;
 }
 
 .hidden{
     background:#888;
+}
+
+.selected{
+    border:3px solid #00ff88;
+    box-shadow:0 0 20px #00ff88;
+    transform:scale(1.05);
 }
 
 button{
@@ -64,10 +71,12 @@ button{
 
 <div class="container">
     <h2 id="title">Memorize both options carefully</h2>
+
     <div class="cards">
         <div class="card" id="card1"></div>
         <div class="card" id="card2"></div>
     </div>
+
     <button id="shuffleBtn">Shuffle Now</button>
 </div>
 
@@ -91,7 +100,7 @@ card1.innerText = optionA;
 card2.innerText = optionB;
 
 let shuffled = false;
-let gameOver = false;    
+let gameOver = false;
 
 shuffleBtn.onclick = () => {
     card1.innerText = "";
@@ -100,7 +109,6 @@ shuffleBtn.onclick = () => {
     card2.classList.add("hidden");
     shuffleBtn.style.display="none";
     title.innerText="Choose one card";
-
     shuffled = true;
 };
 
@@ -111,6 +119,8 @@ function reveal(selected, other){
     if(!shuffled || gameOver) return;
 
     gameOver = true;
+
+    selected.classList.add("selected");
 
     if(forced === "A"){
         selected.innerText = optionA;
@@ -126,6 +136,4 @@ function reveal(selected, other){
 </script>
 
 </body>
-
 </html>
-
