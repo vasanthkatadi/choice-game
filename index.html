@@ -91,6 +91,7 @@ card1.innerText = optionA;
 card2.innerText = optionB;
 
 let shuffled = false;
+let gameover = false;    
 
 shuffleBtn.onclick = () => {
     card1.innerText = "";
@@ -107,7 +108,9 @@ card1.onclick = () => reveal(card1, card2);
 card2.onclick = () => reveal(card2, card1);
 
 function reveal(selected, other){
-    if(!shuffled) return;
+    if(!shuffled || gameOver) return;
+
+    gameOver = true;
 
     if(forced === "A"){
         selected.innerText = optionA;
@@ -123,4 +126,5 @@ function reveal(selected, other){
 </script>
 
 </body>
+
 </html>
