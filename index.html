@@ -3,24 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Destiny Shuffle</title>
+<title>Destiny Reveal</title>
 
 <style>
 body{
     margin:0;
     font-family:Arial, sans-serif;
-    background:linear-gradient(135deg,#1e1e2f,#2c2c54);
+    background:linear-gradient(135deg,#141e30,#243b55);
     color:white;
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
     text-align:center;
+    overflow:hidden;
 }
 
 .container{
     width:90%;
     max-width:400px;
+    position:relative;
+    z-index:2;
+    transition:filter 0.5s ease;
+}
+
+.blur{
+    filter:blur(4px);
 }
 
 .cards{
@@ -32,7 +40,7 @@ body{
 .card{
     width:45%;
     height:130px;
-    background:#444;
+    background:#333;
     border-radius:12px;
     display:flex;
     justify-content:center;
@@ -45,13 +53,12 @@ body{
 }
 
 .hidden{
-    background:#888;
+    background:#777;
 }
 
 .selected{
-    border:3px solid #00ff88;
-    box-shadow:0 0 20px #00ff88;
-    transform:scale(1.05);
+    transform:scale(1.1);
+    border:3px solid #ff0066;
 }
 
 button{
@@ -59,17 +66,81 @@ button{
     padding:10px 20px;
     border:none;
     border-radius:8px;
-    background:#ff6b6b;
+    background:#ff0066;
     color:white;
     font-size:16px;
     cursor:pointer;
+}
+
+/* Countdown */
+.countdown{
+    font-size:40px;
+    margin-top:20px;
+    display:none;
+}
+
+/* Final Reveal */
+.final-heart{
+    display:none;
+    margin-top:25px;
+}
+
+.big-heart{
+    font-size:100px;
+    color:red;
+    animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+    0%{ transform:scale(1); text-shadow:0 0 10px red;}
+    50%{ transform:scale(1.2); text-shadow:0 0 25px red, 0 0 50px crimson;}
+    100%{ transform:scale(1); text-shadow:0 0 10px red;}
+}
+
+.destiny-text{
+    margin-top:10px;
+    font-size:22px;
+    font-weight:bold;
+    animation:fadeIn 2s ease forwards;
+    opacity:0;
+}
+
+@keyframes fadeIn{
+    to{ opacity:1;}
+}
+
+/* Floating hearts */
+.heart-bg{
+    position:absolute;
+    bottom:-50px;
+    animation:floatUp 6s linear infinite;
+    opacity:0.7;
+}
+
+@keyframes floatUp{
+    from{ transform:translateY(0); opacity:0.7;}
+    to{ transform:translateY(-120vh); opacity:0;}
+}
+
+/* Confetti */
+.confetti{
+    position:absolute;
+    width:8px;
+    height:8px;
+    background:red;
+    top:0;
+    animation:fall 3s linear forwards;
+}
+
+@keyframes fall{
+    to{ transform:translateY(100vh) rotate(720deg); opacity:0;}
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" id="container">
     <h2 id="title">Memorize both options carefully</h2>
 
     <div class="cards">
@@ -78,7 +149,18 @@ button{
     </div>
 
     <button id="shuffleBtn">Shuffle Now</button>
+
+    <div class="countdown" id="countdown"></div>
+
+    <div class="final-heart" id="finalHeart">
+        <div class="big-heart">❤️</div>
+        <div class="destiny-text" id="destinyText"></div>
+    </div>
 </div>
+
+<audio id="bgMusic" preload="auto">
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_3f3c4c6a55.mp3" type="audio/mpeg">
+</audio>
 
 <script>
 const params = new URLSearchParams(window.location.search);
@@ -95,6 +177,11 @@ const card1 = document.getElementById("card1");
 const card2 = document.getElementById("card2");
 const shuffleBtn = document.getElementById("shuffleBtn");
 const title = document.getElementById("title");
+const finalHeart = document.getElementById("finalHeart");
+const destinyText = document.getElementById("destinyText");
+const bgMusic = document.getElementById("bgMusic");
+const container = document.getElementById("container");
+const countdown = document.getElementById("countdown");
 
 card1.innerText = optionA;
 card2.innerText = optionB;
@@ -117,21 +204,78 @@ card2.onclick = () => reveal(card2, card1);
 
 function reveal(selected, other){
     if(!shuffled || gameOver) return;
-
     gameOver = true;
 
     selected.classList.add("selected");
+    startCountdown(selected, other);
+}
 
-    if(forced === "A"){
-        selected.innerText = optionA;
-        setTimeout(()=>{ other.innerText = optionB; },1000);
-    } else {
-        selected.innerText = optionB;
-        setTimeout(()=>{ other.innerText = optionA; },1000);
+function startCountdown(selected, other){
+    countdown.style.display="block";
+    let count=3;
+    countdown.innerText=count;
+
+    const interval=setInterval(()=>{
+        count--;
+        if(count===0){
+            clearInterval(interval);
+            countdown.style.display="none";
+            finalReveal(selected, other);
+        }else{
+            countdown.innerText=count;
+        }
+    },1000);
+}
+
+function finalReveal(selected, other){
+    let chosen;
+
+    if(forced==="A"){
+        selected.innerText=optionA;
+        chosen=optionA;
+        other.innerText=optionB;
+    }else{
+        selected.innerText=optionB;
+        chosen=optionB;
+        other.innerText=optionA;
     }
 
     selected.classList.remove("hidden");
     other.classList.remove("hidden");
+
+    container.classList.add("blur");
+
+    setTimeout(()=>{
+        destinyText.innerText="Destiny Has Chosen: "+chosen;
+        finalHeart.style.display="block";
+        bgMusic.play();
+        createHearts();
+        createConfetti();
+    },500);
+}
+
+function createHearts(){
+    setInterval(()=>{
+        const heart=document.createElement("div");
+        heart.className="heart-bg";
+        heart.innerText="❤️";
+        heart.style.left=Math.random()*100+"vw";
+        heart.style.fontSize=(20+Math.random()*30)+"px";
+        document.body.appendChild(heart);
+        setTimeout(()=>heart.remove(),6000);
+    },400);
+}
+
+function createConfetti(){
+    for(let i=0;i<80;i++){
+        const conf=document.createElement("div");
+        conf.className="confetti";
+        conf.style.left=Math.random()*100+"vw";
+        conf.style.background=["red","pink","white"][Math.floor(Math.random()*3)];
+        conf.style.animationDuration=(2+Math.random()*2)+"s";
+        document.body.appendChild(conf);
+        setTimeout(()=>conf.remove(),3000);
+    }
 }
 </script>
 
